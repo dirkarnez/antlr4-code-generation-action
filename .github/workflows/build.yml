@@ -1,0 +1,33 @@
+name: cpp-cmake-mingw-prebuilt-release-actions-workflow
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'c*'
+      
+jobs:
+  build:
+    name: Create Release
+    runs-on: windows-latest
+    env:
+      targetZip: antlr4-code-generation-action-${{ github.ref_name }}-mingw64-x86_64-posix-seh-rev0-8.1.0.zip
+    steps:
+        - uses: actions/checkout@v3
+        
+        - name: cmake generate
+          shell: cmd
+          run: cmake.exe -P generate.cmake
+            
+        - name: Archive Release
+          uses: thedoctor0/zip-release@master
+          with:
+            type: 'zip'
+            directory: "generated"
+            filename: "${{ env.targetZip }}"
+
+        - name: Release prebuilt
+          uses: ncipollo/release-action@v1
+          with:
+            artifacts: "generated/${{ env.targetZip }}"
+            allowUpdates: true
